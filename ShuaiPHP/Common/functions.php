@@ -50,3 +50,28 @@ function redirect($url, $time = 0, $msg = '') {
 		exit ( $str );
 	}
 }
+
+// 格式化文件大小formatFileSize ( memory_get_usage ( true ) );
+function formatFileSize($size) {
+	$unit = explode ( ',', 'b,kb,mb,gb,tb,pb' );
+	$i = floor ( log ( $size, 1024 ) );
+	return @round ( $size / pow ( 1024, $i ), 2 ) . ' ' . $unit [$i];
+}
+
+// 记录时间
+function T($start = '', $end = false) {
+	static $_times = array ();
+	$return = 0;
+	if ($start == '' && $end == false) {
+		$return = microtime (true);
+	} elseif ($end == false) {
+		if (! isset ( $_times [$start] )) {
+			$_times [$start] = T ();
+		}
+		$return = $_times [$start];
+	} else {
+		$return = T () - $_times [$start];
+	}
+	return $return;
+}
+

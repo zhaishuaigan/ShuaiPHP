@@ -1,80 +1,52 @@
 <?php
-
-// ä¯ÀÀÆ÷ÓÑºÃµÄ±äÁ¿Êä³ö
-function dump($var, $echo=true, $label=null, $strict=true) {
-	$label = ($label === null) ? '' : rtrim($label) . ' ';
-	if (!$strict) {
-		if (ini_get('html_errors')) {
-			$output = print_r($var, true);
-			$output = '<pre>' . $label . htmlspecialchars($output, ENT_QUOTES) . '</pre>';
+// æµè§ˆå™¨å‹å¥½çš„å˜é‡è¾“å‡º
+function dump($var, $echo = true, $label = null, $strict = true) {
+	$label = ($label === null) ? '' : rtrim ( $label ) . ' ';
+	if (! $strict) {
+		if (ini_get ( 'html_errors' )) {
+			$output = print_r ( $var, true );
+			$output = '<pre>' . $label . htmlspecialchars ( $output, ENT_QUOTES ) . '</pre>';
 		} else {
-			$output = $label . print_r($var, true);
+			$output = $label . print_r ( $var, true );
 		}
 	} else {
-		ob_start();
-		var_dump($var);
-		$output = ob_get_clean();
-		if (!extension_loaded('xdebug')) {
-			$output = preg_replace("/\]\=\>\n(\s+)/m", '] => ', $output);
-			$output = '<pre>' . $label . htmlspecialchars($output, ENT_QUOTES) . '</pre>';
+		ob_start ();
+		var_dump ( $var );
+		$output = ob_get_clean ();
+		if (! extension_loaded ( 'xdebug' )) {
+			$output = preg_replace ( "/\]\=\>\n(\s+)/m", '] => ', $output );
+			$output = '<pre>' . $label . htmlspecialchars ( $output, ENT_QUOTES ) . '</pre>';
 		}
 	}
 	if ($echo) {
-		echo($output);
+		echo ($output);
 		return null;
-	}else
+	} else
 		return $output;
 }
 
-// URLÖØ¶¨Ïò
-function redirect($url, $time=0, $msg='') {
-	//¶àĞĞURLµØÖ·Ö§³Ö
-	$url = str_replace(array("\n", "\r"), '', $url);
-	if (empty($msg))
-		$msg = "ÏµÍ³½«ÔÚ{$time}ÃëÖ®ºó×Ô¶¯Ìø×ªµ½{$url}£¡";
-	if (!headers_sent()) {
+// URLé‡å®šå‘
+function redirect($url, $time = 0, $msg = '') {
+	// å¤šè¡ŒURLåœ°å€æ”¯æŒ
+	$url = str_replace ( array (
+			"\n",
+			"\r" 
+	), '', $url );
+	if (empty ( $msg ))
+		$msg = "ç³»ç»Ÿå°†åœ¨{$time}ç§’ä¹‹åè‡ªåŠ¨è·³è½¬åˆ°{$url}ï¼";
+	if (! headers_sent ()) {
 		// redirect
 		if (0 === $time) {
-			header('Location: ' . $url);
+			header ( 'Location: ' . $url );
 		} else {
-			header("refresh:{$time};url={$url}");
-			echo($msg);
+			header ( "refresh:{$time};url={$url}" );
+			echo ($msg);
 		}
-		exit();
+		exit ();
 	} else {
 		$str = "<meta http-equiv='Refresh' content='{$time};URL={$url}'>";
 		if ($time != 0)
 			$str .= $msg;
-		exit($str);
+		exit ( $str );
 	}
-}
-
-// ¿ìËÙÎÄ¼şÊı¾İ¶ÁÈ¡ºÍ±£´æ Õë¶Ô¼òµ¥ÀàĞÍÊı¾İ ×Ö·û´®¡¢Êı×é
-function F($name, $value='', $path=DATA_PATH) {
-	static $_cache = array();
-	$filename = $path . $name . '.php';
-	if ('' !== $value) {
-		if (is_null($value)) {
-			// É¾³ı»º´æ
-			return unlink($filename);
-		} else {
-			// »º´æÊı¾İ
-			$dir = dirname($filename);
-			// Ä¿Â¼²»´æÔÚÔò´´½¨
-			if (!is_dir($dir))
-				mkdir($dir);
-			$_cache[$name] =   $value;
-			return file_put_contents($filename, strip_whitespace("<?php\nreturn " . var_export($value, true) . ";\n?>"));
-		}
-	}
-	if (isset($_cache[$name]))
-		return $_cache[$name];
-	// »ñÈ¡»º´æÊı¾İ
-	if (is_file($filename)) {
-		$value = include $filename;
-		$_cache[$name] = $value;
-	} else {
-		$value = false;
-	}
-	return $value;
 }

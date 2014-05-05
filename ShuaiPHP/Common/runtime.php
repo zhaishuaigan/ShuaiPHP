@@ -8,23 +8,10 @@
 if (! defined ( 'LIB_PATH' ))
 	exit ();
 if (version_compare ( PHP_VERSION, '5.2.0', '<' ))
-	die ( 'PHP版本不许大于 5.2.0 !' );
-	
-	// 版本信息
-define ( 'LIB_VERSION', '1.0' );
-define ( 'LIB_RELEASE', '20140601' );
-
-// 系统信息
-if (version_compare ( PHP_VERSION, '5.4.0', '<' )) {
-	@set_magic_quotes_runtime ( 0 );
-	define ( 'MAGIC_QUOTES_GPC', get_magic_quotes_gpc () ? True : False );
-}
+	die ( 'PHP版本必须大于 5.2.0 !' );
 define ( 'IS_CGI', substr ( PHP_SAPI, 0, 3 ) == 'cgi' ? 1 : 0 );
 define ( 'IS_WIN', strstr ( PHP_OS, 'WIN' ) ? 1 : 0 );
 define ( 'IS_CLI', PHP_SAPI == 'cli' ? 1 : 0 );
-
-// 项目名称
-defined ( 'APP_NAME' ) or define ( 'APP_NAME', basename ( dirname ( $_SERVER ['SCRIPT_FILENAME'] ) ) );
 
 if (! IS_CLI) {
 	// 当前文件名
@@ -48,126 +35,61 @@ if (! IS_CLI) {
 	}
 	
 	// 支持的URL模式
-	define ( 'URL_COMMON', 0 ); // 普通模式
 	define ( 'URL_PATHINFO', 1 ); // PATHINFO模式
 	define ( 'URL_REWRITE', 2 ); // REWRITE模式
-	define ( 'URL_COMPAT', 3 ); // 兼容模式
 }
 
-// 路径设置 可在入口文件中重新定义 所有路径常量都必须以/ 结尾
-defined ( 'CORE_PATH' ) or define ( 'CORE_PATH', LIB_PATH . 'Lib/' ); // 系统核心类库目录
-defined ( 'EXTEND_PATH' ) or define ( 'EXTEND_PATH', LIB_PATH . 'Extend/' ); // 系统扩展目录
-defined ( 'MODE_PATH' ) or define ( 'MODE_PATH', EXTEND_PATH . 'Mode/' ); // 模式扩展目录
-defined ( 'ENGINE_PATH' ) or define ( 'ENGINE_PATH', EXTEND_PATH . 'Engine/' ); // 引擎扩展目录
-defined ( 'VENDOR_PATH' ) or define ( 'VENDOR_PATH', EXTEND_PATH . 'Vendor/' ); // 第三方类库目录
-defined ( 'LIBRARY_PATH' ) or define ( 'LIBRARY_PATH', EXTEND_PATH . 'Library/' ); // 扩展类库目录
-defined ( 'COMMON_PATH' ) or define ( 'COMMON_PATH', APP_PATH . 'Common/' ); // 项目公共目录
-defined ( 'LIB_PATH' ) or define ( 'LIB_PATH', APP_PATH . 'Lib/' ); // 项目类库目录
-defined ( 'CONF_PATH' ) or define ( 'CONF_PATH', APP_PATH . 'Conf/' ); // 项目配置目录
-defined ( 'LANG_PATH' ) or define ( 'LANG_PATH', APP_PATH . 'Lang/' ); // 项目语言包目录
-defined ( 'TMPL_PATH' ) or define ( 'TMPL_PATH', APP_PATH . 'Tpl/' ); // 项目模板目录
-defined ( 'HTML_PATH' ) or define ( 'HTML_PATH', APP_PATH . 'Html/' ); // 项目静态目录
-defined ( 'LOG_PATH' ) or define ( 'LOG_PATH', RUNTIME_PATH . 'Logs/' ); // 项目日志目录
-defined ( 'TEMP_PATH' ) or define ( 'TEMP_PATH', RUNTIME_PATH . 'Temp/' ); // 项目缓存目录
-defined ( 'DATA_PATH' ) or define ( 'DATA_PATH', RUNTIME_PATH . 'Data/' ); // 项目数据目录
-defined ( 'CACHE_PATH' ) or define ( 'CACHE_PATH', RUNTIME_PATH . 'Cache/' ); // 项目模板缓存目录
-                                                                        
+// 常用变量
+defined ( 'APP_CONF_PATH' ) or define ( 'APP_CONF_PATH', APP_PATH . 'Config/' );
+defined ( 'APP_COMMON_PATH' ) or define ( 'APP_COMMON_PATH', APP_PATH . 'Common/' );
+defined ( 'APP_EXTEND_PATH' ) or define ( 'APP_EXTEND_PATH', APP_PATH . 'Extend/' );
+defined ( 'APP_ACTION_PATH' ) or define ( 'APP_ACTION_PATH', APP_PATH . 'Lib/Action/' );
+defined ( 'APP_MODEL_PATH' ) or define ( 'APP_MODEL_PATH', APP_PATH . 'Lib/Model/' );
+defined ( 'APP_VIEW_PATH' ) or define ( 'APP_VIEW_PATH', APP_PATH . 'Lib/View/' );
+defined ( 'APP_LANG_PATH' ) or define ( 'APP_LANG_PATH', APP_PATH . 'Lang/' );
+
+defined ( 'LIB_CONF_PATH' ) or define ( 'LIB_CONF_PATH', LIB_PATH . 'Config/' );
+defined ( 'LIB_COMMON_PATH' ) or define ( 'LIB_COMMON_PATH', LIB_PATH . 'Common/' );
+defined ( 'LIB_EXTEND_PATH' ) or define ( 'LIB_EXTEND_PATH', LIB_PATH . 'Extend/' );
+defined ( 'LIB_ACTION_PATH' ) or define ( 'LIB_ACTION_PATH', LIB_PATH . 'Lib/Action/' );
+defined ( 'LIB_MODEL_PATH' ) or define ( 'LIB_MODEL_PATH', LIB_PATH . 'Lib/Model/' );
+defined ( 'LIB_VIEW_PATH' ) or define ( 'LIB_VIEW_PATH', LIB_PATH . 'Lib/View/' );
+defined ( 'LIB_CORE_PATH' ) or define ( 'LIB_CORE_PATH', LIB_PATH . 'Lib/Core/' );
+
+defined ( 'LIB_LANG_PATH' ) or define ( 'LIB_LANG_PATH', LIB_PATH . 'Lang/' );
 // 为了方便导入第三方类库 设置Vendor目录到include_path
-set_include_path ( get_include_path () . PATH_SEPARATOR . VENDOR_PATH );
+set_include_path ( get_include_path () . PATH_SEPARATOR . LIB_EXTEND_PATH );
 
 // 加载运行时所需要的文件 并负责自动目录生成
 function load_runtime_file() {
 	// 加载系统基础函数库
-	require LIB_PATH . 'Common/common.php';
+	require LIB_COMMON_PATH . 'common.php';
+	require LIB_COMMON_PATH . 'functions.php';
 	// 读取核心编译文件列表
 	$list = array (
-			CORE_PATH . 'Core/LIB.class.php',
-			CORE_PATH . 'Core/LIBException.class.php', // 异常处理类
-			CORE_PATH . 'Core/Behavior.class.php' 
-	);
+			LIB_CORE_PATH . 'LIB.class.php', // 核心类
+			LIB_CORE_PATH . 'LIBException.class.php', // 异常处理类
+			LIB_CORE_PATH . 'Action.class.php', // 控制器类
+			LIB_CORE_PATH . 'Model.class.php', // 模型类
+			LIB_CORE_PATH . 'View.class.php'  // 视图类
+		);
 	// 加载模式文件列表
 	foreach ( $list as $key => $file ) {
 		if (is_file ( $file ))
-			require_cache ( $file );
+			include $file;
 	}
-	// 加载系统类库别名定义
-	alias_import ( include LIB_PATH . 'Conf/alias.php' );
 	
 	// 检查项目目录结构 如果不存在则自动创建
-	if (! is_dir ( LIB_PATH )) {
+	if (! is_dir ( APP_PATH )) {
 		// 创建项目目录结构
 		build_app_dir ();
-	} elseif (! is_dir ( CACHE_PATH )) {
-		// 检查缓存目录
-		check_runtime ();
-	} elseif (APP_DEBUG) {
+	}
+	if (APP_DEBUG) {
 		// 调试模式切换删除编译缓存
-		if (is_file ( RUNTIME_FILE ))
-			unlink ( RUNTIME_FILE );
-	}
-}
-
-// 检查缓存目录(Runtime) 如果不存在则自动创建
-function check_runtime() {
-	if (! is_dir ( RUNTIME_PATH )) {
-		mkdir ( RUNTIME_PATH );
-	} elseif (! is_writeable ( RUNTIME_PATH )) {
-		header ( 'Content-Type:text/html; charset=utf-8' );
-		exit ( '目录 [ ' . RUNTIME_PATH . ' ] 不可写！' );
-	}
-	mkdir ( CACHE_PATH ); // 模板缓存目录
-	if (! is_dir ( LOG_PATH ))
-		mkdir ( LOG_PATH ); // 日志目录
-	if (! is_dir ( TEMP_PATH ))
-		mkdir ( TEMP_PATH ); // 数据缓存目录
-	if (! is_dir ( DATA_PATH ))
-		mkdir ( DATA_PATH ); // 数据文件目录
-	return true;
-}
-
-// 创建编译缓存
-function build_runtime_cache($append = '') {
-	// 生成编译文件
-	$defs = get_defined_constants ( TRUE );
-	$content = '$GLOBALS[\'_beginTime\'] = microtime(TRUE);';
-	if (defined ( 'RUNTIME_DEF_FILE' )) { // 编译后的常量文件外部引入
-		file_put_contents ( RUNTIME_DEF_FILE, '<?php ' . array_define ( $defs ['user'] ) );
-		$content .= 'require \'' . RUNTIME_DEF_FILE . '\';';
-	} else {
-		$content .= array_define ( $defs ['user'] );
-	}
-	$content .= 'set_include_path(get_include_path() . PATH_SEPARATOR . VENDOR_PATH);';
-	// 读取核心编译文件列表
-	$list = array (
-			LIB_PATH . 'Common/common.php',
-			CORE_PATH . 'Core/LIB.class.php',
-			CORE_PATH . 'Core/LIBException.class.php',
-			CORE_PATH . 'Core/Behavior.class.php' 
-	);
-	foreach ( $list as $file ) {
-		$content .= compile ( $file );
-	}
-	// 系统行为扩展文件统一编译
-	if (C ( 'APP_TAGS_ON' )) {
-		$content .= build_tags_cache ();
-	}
-	$alias = include LIB_PATH . 'Conf/alias.php';
-	$content .= 'alias_import(' . var_export ( $alias, true ) . ');';
-	// 编译框架默认语言包和配置参数
-	$content .= $append . "\nL(" . var_export ( L (), true ) . ");C(" . var_export ( C (), true ) . ');G(\'loadTime\');LIB::Start();';
-	file_put_contents ( RUNTIME_FILE, strip_whitespace ( '<?php ' . $content ) );
-}
-
-// 编译系统行为扩展类库
-function build_tags_cache() {
-	$tags = C ( 'extends' );
-	$content = '';
-	foreach ( $tags as $tag => $item ) {
-		foreach ( $item as $key => $name ) {
-			$content .= is_int ( $key ) ? compile ( CORE_PATH . 'Behavior/' . $name . 'Behavior.class.php' ) : compile ( $name );
+		if (is_file ( APP_RUNTIME_FILE )) {
+			unlink ( APP_RUNTIME_FILE );
 		}
 	}
-	return $content;
 }
 
 // 创建项目目录结构
@@ -177,60 +99,47 @@ function build_app_dir() {
 		mk_dir ( APP_PATH, 0777 );
 	if (is_writeable ( APP_PATH )) {
 		$dirs = array (
-				LIB_PATH,
-				RUNTIME_PATH,
-				CONF_PATH,
-				COMMON_PATH,
-				LANG_PATH,
-				CACHE_PATH,
-				TMPL_PATH,
-				TMPL_PATH . C ( 'DEFAULT_THEME' ) . '/',
-				LOG_PATH,
-				TEMP_PATH,
-				DATA_PATH,
-				LIB_PATH . 'Model/',
-				LIB_PATH . 'Action/',
-				LIB_PATH . 'Behavior/',
-				LIB_PATH . 'Widget/' 
+				APP_PATH,
+				APP_CONF_PATH,
+				APP_COMMON_PATH,
+				APP_EXTEND_PATH,
+				APP_ACTION_PATH,
+				APP_MODEL_PATH,
+				APP_VIEW_PATH,
+				APP_LANG_PATH,
+				APP_RUNTIME_PATH 
 		);
 		foreach ( $dirs as $dir ) {
 			if (! is_dir ( $dir ))
 				mk_dir ( $dir, 0777 );
 		}
-		// 目录安全写入
-		defined ( 'BUILD_DIR_SECURE' ) or define ( 'BUILD_DIR_SECURE', false );
-		if (BUILD_DIR_SECURE) {
-			defined ( 'DIR_SECURE_FILENAME' ) or define ( 'DIR_SECURE_FILENAME', 'index.html' );
-			defined ( 'DIR_SECURE_CONTENT' ) or define ( 'DIR_SECURE_CONTENT', ' ' );
-			// 自动写入目录安全文件
-			$content = DIR_SECURE_CONTENT;
-			$a = explode ( ',', DIR_SECURE_FILENAME );
-			foreach ( $a as $filename ) {
-				foreach ( $dirs as $dir )
-					file_put_contents ( $dir . $filename, $content );
-			}
-		}
 		// 写入配置文件
-		if (! is_file ( CONF_PATH . 'config.php' ))
-			file_put_contents ( CONF_PATH . 'config.php', "<?php\nreturn array(\n\t//'配置项'=>'配置值'\n);\n?>" );
-			// 写入测试Action
-		if (! is_file ( LIB_PATH . 'Action/IndexAction.class.php' ))
+		if (! is_file ( APP_CONF_PATH . 'config.php' )) {
+			build_defult_config ();
+		}
+		// 写入测试Action
+		if (! is_file ( APP_ACTION_PATH . 'IndexAction.class.php' )) {
 			build_first_action ();
+		}
 	} else {
-		header ( 'Content-Type:text/html; charset=utf-8' );
-		exit ( '项目目录不可写，目录无法自动生成！<BR>请使用项目生成器或者手动生成项目目录~' );
+		exit ( '项目目录不可写，目录无法自动生成！<BR>请手动生成项目目录~' );
 	}
+}
+
+// 创建默认配置文件
+function build_defult_config() {
+	file_put_contents ( APP_CONF_PATH . 'config.php', "<?php\nreturn array(\n\t//'配置项'=>'配置值'\n);\n?>" );
 }
 
 // 创建测试Action
 function build_first_action() {
-	$content = file_get_contents ( LIB_PATH . 'Tpl/default_index.tpl' );
-	file_put_contents ( LIB_PATH . 'Action/IndexAction.class.php', $content );
+	$content = file_get_contents ( LIB_ACTION_PATH . 'IndexAction.class.php' );
+	file_put_contents ( APP_ACTION_PATH . 'IndexAction.class.php', $content );
 }
 
 // 加载运行时所需文件
 load_runtime_file ();
 // 记录加载文件时间
-G ( 'loadTime' );
+echo T () - $GLOBALS ['_beginTime'];
 // 执行入口
 LIB::Start ();

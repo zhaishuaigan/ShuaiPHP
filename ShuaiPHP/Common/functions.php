@@ -63,7 +63,7 @@ function T($start = '', $end = false) {
 	static $_times = array ();
 	$return = 0;
 	if ($start == '' && $end == false) {
-		$return = microtime (true);
+		$return = microtime ( true );
 	} elseif ($end == false) {
 		if (! isset ( $_times [$start] )) {
 			$_times [$start] = T ();
@@ -73,5 +73,13 @@ function T($start = '', $end = false) {
 		$return = T () - $_times [$start];
 	}
 	return $return;
+}
+
+// 获取文件执行后的代码
+function fatch($filename) {
+	ob_start ();
+	ob_implicit_flush ( 0 );
+	include $filename;
+	return ob_get_clean ();
 }
 

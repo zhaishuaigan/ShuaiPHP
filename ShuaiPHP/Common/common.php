@@ -1,6 +1,5 @@
 <?php
 
-// 循环创建目录
 function mk_dir($dir, $mode = 0777) {
 	if (is_dir($dir) || @mkdir($dir, $mode))
 		return true;
@@ -10,10 +9,8 @@ function mk_dir($dir, $mode = 0777) {
 }
 
 
-// 去除代码中的空白和注释
 function strip_whitespace($content) {
 	$stripStr = '';
-	//分析php源码
 	$tokens = token_get_all($content);
 	$last_space = false;
 	for ($i = 0, $j = count($tokens); $i < $j; $i++) {
@@ -22,11 +19,9 @@ function strip_whitespace($content) {
 			$stripStr .= $tokens[$i];
 		} else {
 			switch ($tokens[$i][0]) {
-				//过滤各种PHP注释
 				case T_COMMENT:
 				case T_DOC_COMMENT:
 					break;
-					//过滤空格
 				case T_WHITESPACE:
 					if (!$last_space) {
 						$stripStr .= ' ';

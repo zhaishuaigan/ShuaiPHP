@@ -136,3 +136,78 @@ function A($name) {
 function loadTime() {
 	return T ( 'end' ) - $GLOBALS ['_beginTime'];
 }
+
+// 编译文件
+function compile($filename) {
+	$content = file_get_contents($filename);
+	// 替换预编译指令
+	$content = preg_replace('/\/\/\s*\[RUNTIME\](.*?)\/\/\s*\[\/RUNTIME\]/s', '', $content);
+	$content = substr(trim($content), 5);
+	if ('?>' == substr($content, -2))
+		$content = substr($content, 0, -2);
+	return $content;
+}
+
+// 去除代码中的空白和注释
+function strip_whitespace($content) {
+	$stripStr = '';
+	//分析php源码
+	$tokens = token_get_all($content);
+	$last_space = false;
+	for ($i = 0, $j = count($tokens); $i < $j; $i++) {
+		if (is_string($tokens[$i])) {
+			$last_space = false;
+			$stripStr .= $tokens[$i];
+		} else {
+			switch ($tokens[$i][0]) {
+				//过滤各种PHP注释
+				case T_COMMENT:
+				case T_DOC_COMMENT:
+					break;
+					//过滤空格
+				case T_WHITESPACE:
+					if (!$last_space) {
+						$stripStr .= ' ';
+						$last_space = true;
+					}
+					break;
+				case T_START_HEREDOC:
+					$stripStr .= "<<<THINK\n";
+					break;
+				case T_END_HEREDOC:
+					$stripStr .= "THINK;\n";
+					for($k = $i+1; $k < $j; $k++) {
+						if(is_string($tokens[$k]) && $tokens[$k] == ';') {
+							$i = $k;
+							break;
+						} else if($tokens[$k][0] == T_CLOSE_TAG) {
+							break;
+						}
+					}
+					break;
+				default:
+					$last_space = false;
+					$stripStr .= $tokens[$i][1];
+			}
+		}
+	}
+	return $stripStr;
+}
+// 根据数组生成常量定义
+function array_define($array,$check=true) {
+	$content = "\n";
+	foreach ($array as $key => $val) {
+		$key = strtoupper($key);
+		if($check)   $content .= 'defined(\'' . $key . '\') or ';
+		if (is_int($val) || is_float($val)) {
+			$content .= "define('" . $key . "'," . $val . ');';
+		} elseif (is_bool($val)) {
+			$val = ($val) ? 'true' : 'false';
+			$content .= "define('" . $key . "'," . $val . ');';
+		} elseif (is_string($val)) {
+			$content .= "define('" . $key . "','" . addslashes($val) . "');";
+		}
+		$content    .= "\n";
+	}
+	return $content;
+}

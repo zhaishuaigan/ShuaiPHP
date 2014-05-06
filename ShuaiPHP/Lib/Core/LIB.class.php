@@ -16,23 +16,11 @@ class LIB {
 				'LIB',
 				'autoload' 
 		) );
-		
-		self::loadConfig();
-		
-		App::run();
-	}
-	static function loadConfig(){
-		$configFiles = array(
-			LIB_CONF_PATH . 'common.php',
-			APP_CONF_PATH . 'common.php',
-			APP_CONF_PATH . 'db.php',
-			APP_CONF_PATH . 'debug.php',
-		);
-		foreach($configFiles as $file){
-			if(is_file($file)){
-				C(include $file);
-			}
-		}
+		// [RUNTIME]
+		self::loadConfig ();
+		self::buildLib ();
+		// [/RUNTIME]
+		App::run ();
 	}
 	static function appError($errno, $errstr, $errfile, $errline) {
 		$errorStr = "[$errno] $errstr " . basename ( $errfile ) . " 第 $errline 行.";
@@ -70,4 +58,49 @@ class LIB {
 		}
 		return false;
 	}
+	// [RUNTIME]
+	// 加载配置
+	static function loadConfig() {
+		$configFiles = array (
+				LIB_CONF_PATH . 'common.php',
+				APP_CONF_PATH . 'common.php',
+				APP_CONF_PATH . 'db.php',
+				APP_CONF_PATH . 'debug.php' 
+		);
+		foreach ( $configFiles as $file ) {
+			if (is_file ( $file )) {
+				C ( include $file );
+			}
+		}
+	}
+	// 编译lib到runtime文件
+	static function buildLib() {
+		if (APP_DEBUG) {
+			return;
+		}
+		// 生成编译文件
+		$defs = get_defined_constants ( TRUE );
+		$content = "\n" . '$GLOBALS[\'_beginTime\'] = microtime(TRUE);';
+		$content .= array_define ( $defs ['user'] );
+		$content .= 'set_include_path(get_include_path() . PATH_SEPARATOR . LIB_EXTEND_PATH);' . "\n";
+		// 读取核心编译文件列表
+		$list = array (
+				LIB_COMMON_PATH . 'functions.php', // 公共函数库
+				LIB_CORE_PATH . 'LIB.class.php', // 核心类
+				LIB_CORE_PATH . 'LIBException.class.php', // 异常处理类
+				LIB_CORE_PATH . 'Action.class.php', // 控制器类
+				LIB_CORE_PATH . 'Model.class.php', // 模型类
+				LIB_CORE_PATH . 'View.class.php', // 视图类
+				LIB_CORE_PATH . 'Log.class.php'  // 日志类
+				);
+		foreach ( $list as $file ) {
+			$content .= compile ( $file );
+		}
+		$content .= 'C(' . var_export ( C (), true ) . ');' . "\n";
+		// 编译框架默认语言包和配置参数
+		$content .= 'LIB::Start();' . "\n";
+		file_put_contents ( APP_RUNTIME_FILE, strip_whitespace ( '<?php ' . $content ) );
+		// file_put_contents ( APP_RUNTIME_FILE, '<?php ' . $content );
+	}
+	// [/RUNTIME]
 }

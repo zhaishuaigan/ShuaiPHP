@@ -1,4 +1,13 @@
 <?php
+// 循环创建目录
+function mk_dir($dir, $mode = 0777) {
+	if (is_dir ( $dir ) || @mkdir ( $dir, $mode ))
+		return true;
+	if (! mk_dir ( dirname ( $dir ), $mode ))
+		return false;
+	return @mkdir ( $dir, $mode );
+}
+
 // 浏览器友好的变量输出
 function dump($var, $echo = true, $label = null, $strict = true) {
 	$label = ($label === null) ? '' : rtrim ( $label ) . ' ';
@@ -82,4 +91,48 @@ function fatch($filename) {
 	include $filename;
 	return ob_get_clean ();
 }
-
+function C($name = null, $value = null) {
+	static $_config = array ();
+	// 无参数时获取所有
+	if (empty ( $name )) {
+		return $_config;
+	}
+	// 优先执行设置获取或赋值
+	if (is_string ( $name )) {
+		$name = strtolower ( $name );
+		if (is_null ( $value )) {
+			return isset ( $_config [$name] ) ? $_config [$name] : null;
+		} else {
+			$_config [$name] = $value;
+			return;
+		}
+	}
+	// 批量设置
+	if (is_array ( $name )) {
+		return $_config = array_merge ( $_config, array_change_key_case ( $name ) );
+	}
+	return null; // 避免非法参数
+}
+// 创建控制器
+function A($name) {
+	static $_action = array ();
+	if (isset ( $_action [$name] )) {
+		return $_action [$name];
+	}
+	$class = $name . 'Action';
+	$file = APP_ACTION_PATH . $class . '.class.php';
+	if (is_file ( $file )) {
+		include $file;
+	}
+	if (class_exists ( $class, false )) {
+		$action = new $class ();
+		$_action [$name] = $action;
+		return $action;
+	} else {
+		return false;
+	}
+}
+// 获取程序运行时间
+function loadTime() {
+	return T ( 'end' ) - $GLOBALS ['_beginTime'];
+}

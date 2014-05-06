@@ -63,7 +63,6 @@ set_include_path ( get_include_path () . PATH_SEPARATOR . LIB_EXTEND_PATH );
 // 加载运行时所需要的文件 并负责自动目录生成
 function load_runtime_file() {
 	// 加载系统基础函数库
-	require LIB_COMMON_PATH . 'common.php';
 	require LIB_COMMON_PATH . 'functions.php';
 	// 读取核心编译文件列表
 	$list = array (
@@ -71,8 +70,9 @@ function load_runtime_file() {
 			LIB_CORE_PATH . 'LIBException.class.php', // 异常处理类
 			LIB_CORE_PATH . 'Action.class.php', // 控制器类
 			LIB_CORE_PATH . 'Model.class.php', // 模型类
-			LIB_CORE_PATH . 'View.class.php'  // 视图类
-		);
+			LIB_CORE_PATH . 'View.class.php',  // 视图类
+			LIB_CORE_PATH . 'Log.class.php',  // 日志类
+	);
 	// 加载模式文件列表
 	foreach ( $list as $key => $file ) {
 		if (is_file ( $file ))
@@ -139,7 +139,5 @@ function build_first_action() {
 
 // 加载运行时所需文件
 load_runtime_file ();
-// 记录加载文件时间
-echo T () - $GLOBALS ['_beginTime'];
 // 执行入口
 LIB::Start ();

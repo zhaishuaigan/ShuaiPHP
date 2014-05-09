@@ -6,8 +6,4 @@ class Model {
         
     }
 
-    function Model($name) {
-        
-    }
-
 }

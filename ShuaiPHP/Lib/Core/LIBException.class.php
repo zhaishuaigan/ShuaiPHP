@@ -1,4 +1,5 @@
 <?php
-class LIBException{
-	
+
+class LIBException {
+    
 }

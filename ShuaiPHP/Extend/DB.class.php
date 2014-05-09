@@ -1,4 +1,7 @@
 <?php
-class DB{
-	static $dbname = 'shuai';
+
+class DB {
+
+    static $dbname = 'shuai';
+
 }
